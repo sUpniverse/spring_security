@@ -4,6 +4,7 @@
 
 - [가이드 참고](https://spring.io/guides/gs/securing-web/)
 - Reference 살펴보기
+- OAuth2
 
 <br/>
 
@@ -160,3 +161,97 @@
   ```
   - thymeleaf 기능으로 가져올 수 있다. `HttpServletRequest#getRemoteUSer()`
 
+
+
+## After Getting Started, 고쳐쓰기
+
+- 기존의 Getting Started후 몇 가지 기능들을 고쳐 쓰자
+
+- Account Model, Controller, Repository, Service  생성 (기본적인 것이니 생략)
+
+- InMemory 대신, UserDeatails Service 구현
+
+  ```java
+  @Service
+  public class AccountService implements UserDetailsService {
+  	  @Override
+      public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+          Account account = repository.findByEmail(username);
+  
+          UserDetails userDetails = new UserDetails() {
+  
+              //GrantedAuthority : 권한
+              @Override
+              public Collection<? extends GrantedAuthority> getAuthorities() {
+                  List<GrantedAuthority> authorities = new ArrayList<>();
+                  authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+  
+                  return authorities;
+              }
+  
+              @Override
+              public String getPassword() {
+                  return account.getPassword();
+              }
+  
+              @Override
+              public String getUsername() {
+                  return account.getEmail();
+              }
+  
+              @Override
+              public boolean isAccountNonExpired() {
+                  return true;
+              }
+  
+              @Override
+              public boolean isAccountNonLocked() {
+                  return true;
+              }
+  
+              @Override
+              public boolean isCredentialsNonExpired() {
+                  return true;
+              }
+  
+              //계정 비활성화
+              @Override
+              public boolean isEnabled() {
+                  return true;
+              }
+          };
+          return userDetails;
+      }
+  }
+  ```
+
+- PasswordEncoder 구현
+
+  - Password 저장에 관한 방식, <{암호방식}암호화된 암호 > 로 만들기 위한 encoder
+  - [Reference](https://docs.spring.io/spring-security/site/docs/5.2.0.BUILD-SNAPSHOT/reference/htmlsingle/#core-services-password-encoding)
+
+  ```java
+  //Service에 구현
+  public Account save(Account account) {
+          account.setPassword(passwordEncoder.encode(account.getPassword()));
+          return repository.save(account);
+   }
+  ```
+
+  
+
+- UserDetails를 직접구현하지 않고 User로 구현하기
+
+  ```java
+  @Override
+  public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+      Account account = repository.findByEmail(username);
+  
+      List<GrantedAuthority> authorities = new ArrayList<>();
+      authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+  
+      return new User(account.getEmail(), account.getPassword(), authorities);
+  }
+  ```
+
+  
