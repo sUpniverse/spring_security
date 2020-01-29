@@ -4,7 +4,7 @@
 
 - [가이드 참고](https://spring.io/guides/gs/securing-web/)
 - Reference 살펴보기
-- [OAuth2](https://github.com/sUpniverse/spring_security/blob/master/OAuth2.md#spring-security-oauth2)
+- [OAuth2](https://github.com/sUpniverse/spring_security/blob/master/demo/OAuth2.md#spring-security-oauth2)
 
 <br/>
 
